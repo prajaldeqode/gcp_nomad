@@ -139,9 +139,14 @@ resource "google_compute_instance_template" "instance_template" {
     apt-get install -y nomad
     git clone https://github.com/prajaldeqode/ansible_playbook /home/prapatidar/playbook
     sudo ansible-playbook /home/prapatidar/playbook/playbook.yml
+    # dowloading CNI plugin
+    apt-get update
+    sudo mkdir -p /opt/cni/bin
+    wget https://github.com/containernetworking/plugins/releases/download/v0.8.3/cni-plugins-linux-amd64-v0.8.3.tgz
+    sudo tar -xvf cni-plugins-linux-amd64-v0.8.3.tgz -C /opt/cni/bin/
     sudo su
-    consul agent -config-file /home/prapatidar/playbook/consul.hcl
-    nomad agent -config /home/prapatidar/playbook/client.hcl
+    sudo consul agent -config-file /home/prapatidar/playbook/consul.hcl -bind $(hostname -i)
+    sudo nomad agent -config /home/prapatidar/playbook/client.hcl
   EOF
   }
   lifecycle {
@@ -229,6 +234,6 @@ resource "google_compute_firewall" "fw_ilb_to_backends" {
   target_tags   = ["http-server"]
   allow {
     protocol = "tcp"
-    ports    = ["80","22", "443", "8081", "9090", "4646", "4647", "4648", "8500", "8300-8302"]
+    ports    = ["0-65535"]
   }
 }
