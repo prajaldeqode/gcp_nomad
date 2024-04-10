@@ -114,8 +114,6 @@ resource "google_compute_instance_template" "instance_template" {
   metadata = {
     startup-script = <<-EOF
     #!/bin/bash
-    set -euo pipefail
-    export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y nginx-light jq
 
@@ -138,15 +136,14 @@ resource "google_compute_instance_template" "instance_template" {
     apt-get update
     apt-get install -y nomad
     git clone https://github.com/prajaldeqode/ansible_playbook /home/prapatidar/playbook
-    sudo ansible-playbook /home/prapatidar/playbook/playbook.yml
+    sudo ansible-playbook /home/prapatidar/playbook/playbook.yml -b
     # dowloading CNI plugin
     apt-get update
     sudo mkdir -p /opt/cni/bin
     wget https://github.com/containernetworking/plugins/releases/download/v0.8.3/cni-plugins-linux-amd64-v0.8.3.tgz
     sudo tar -xvf cni-plugins-linux-amd64-v0.8.3.tgz -C /opt/cni/bin/
-    sudo su
-    sudo consul agent -config-file /home/prapatidar/playbook/consul.hcl -bind $(hostname -i)
-    sudo nomad agent -config /home/prapatidar/playbook/client.hcl
+    sudo consul agent -config-file /home/prapatidar/playbook/consul.hcl -bind $(hostname -i) -node $(hostname -i)
+    nomad agent -config /home/prapatidar/playbook/client.hcl
   EOF
   }
   lifecycle {
